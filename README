@@ -1,0 +1,13 @@
+Submit a job :  ./run.sh  [TaskName]  [DataPeriod]  full 
+1. TaskName can be any name. 
+2. The unique folder is created in you grid home as [TaskName][DataPeriod]. 
+3. If you want to avoid "overwrite", please change the TaskName if the DataPeriod is not changed or delete the folder in your grid folder. 
+
+Downloading a job after the job finishes : ./run.sh [TaskName] [DataPeriod] download
+1. Downloading will be done in ~/alice. 
+2. If your download is the first time after the job finishes, please remove ~/alice directory if it exists to avoid the previous job results. 
+3. If your download exits unexpectedly, it resumes again by executing again "./run.sh [TaskName] [DataPeriod] download"
+4. If you want to check the result in middle of job running, you can download first by this line. Because this line downloads currently finished jobs. If you execute this line again  some time later if will check if the results are downloaded or not. If jobs are already downloaded it does not copy from the grid and ignore it in order to avoid overwrite problem. If there are new results, it will download them in your ~/alice folder. 
+
+
+
