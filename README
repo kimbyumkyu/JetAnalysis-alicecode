@@ -1,7 +1,7 @@
 Submit a job :  ./run.sh  [TaskName]  [DataPeriod]  full 
 1. TaskName can be any name. 
 2. The unique folder is created in you grid home as [TaskName][DataPeriod]. 
-3. If you want to avoid "overwrite", please change the TaskName if the DataPeriod is not changed or delete the folder in your grid folder. 
+3. If you want to avoid "overwrite", please change the TaskName if the DataPeriod is not changed or delete the folder in your grid folder. There would be saving error if you don't remove the previous folder having the exactly same folder name. 
 
 Downloading a job after the job finishes : ./run.sh [TaskName] [DataPeriod] download
 1. Downloading will be done in ~/alice. 

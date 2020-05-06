@@ -134,8 +134,9 @@ void AliBKJetAnalysis::UserCreateOutputObjects()
 	auto binpthardbin = AxisFix("pthardbin", 20, 0, 20);
 	auto binjetpt = AxisVar("binjetpt", {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52,54,56,58, 60, 65, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 450, 500, 550, 600, 650, 700, 800, 900, 1000, 5000});
 	auto binjt = AxisLog("JtBin", 20, 0.01, 10, 0);
+	auto binz = AxisFix("zbin", 5, 0, 100);
 	//auto binjetpt = AxisVar("binjetpt", {0,2,4,6,8,10,12,14,16,18,20, 25.0, 30.0, 40.0, 50.0, 60.0, 70.0, 85.0, 100.0,120,150,200,500,1000,5000});
-	
+
 	//auto binjetpt = AxisVar("binjetpt",{0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,300,400,500,1000,5000});
 	//auto binjetpt = AxisLog("binjetpt", 50, 1, 500, 1);
 	//auto binjetpt = AxisFix("binjetpt",30,0,300);
@@ -192,14 +193,13 @@ void AliBKJetAnalysis::UserCreateOutputObjects()
 	CreateTHnSparse("hJetPtMiss", "Inclusive jet pt  missing tracks", 3, {binCent, binjetpt, binpthardbin}, "s");
 
 
-	CreateTHnSparse("hJetJt", "Inclusive jet pt", 3, {binCent, binjetpt, binjt ,binpthardbin}, "s");
-	CreateTHnSparse("hJetJtTest", "Inclusive jet pt", 3, {binCent, binjetpt, binjt, binpthardbin}, "s");
-	CreateTHnSparse("hJetJtBeforeCorr", "Inclusive jet pt", 3, {binCent, binjetpt, binjt, binpthardbin}, "s");
-	CreateTHnSparse("hJetJtBeforeMatching", "Inclusive matched jet pt", 3, {binCent, binjetpt, binjt, binpthardbin}, "s");
-	CreateTHnSparse("hJetJtTruth", "Inclusive Gen jet pt", 3, {binCent, binjetpt, binjt , binpthardbin}, "s");
-	CreateTHnSparse("hJetJtRes", "Inclusive jet pt Res Matrix", 4, {binCent, binjetpt, binjetpt, binjt,binpthardbin}, "s");
-	CreateTHnSparse("hJetJtFake", "Inclusive jet pt fake tracks", 3, {binCent, binjetpt, binjt,binpthardbin}, "s");
-	CreateTHnSparse("hJetJtMiss", "Inclusive jet pt  missing tracks", 3, {binCent, binjetpt, binjt,binpthardbin}, "s");
+	CreateTHnSparse("hJetJt", "Inclusive jet jt", 5, {binCent, binjetpt, binz, binjt ,binpthardbin}, "s");
+	CreateTHnSparse("hJetJtBeforeCorr", "Inclusive jet jt before correction", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
+	CreateTHnSparse("hJetJtBeforeMatching", "Jet jt before mathcing", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
+	CreateTHnSparse("hJetJtTruth", "Inclusive Gen jet jt", 5, {binCent, binjetpt, binz, binjt , binpthardbin}, "s");
+	CreateTHnSparse("hJetJtRes", "Inclusive jet jt Res Matrix", 7, {binCent, binjetpt, binjetpt, binz, binjt,binjt,binpthardbin}, "s");
+	CreateTHnSparse("hJetJtFake", "Inclusive jet jt fake tracks", 5, {binCent, binjetpt, binz ,binjt ,binpthardbin}, "s");
+	CreateTHnSparse("hJetJtMiss", "Inclusive jet jt missing tracks", 5, {binCent, binjetpt, binz ,binjt,binpthardbin}, "s");
 
 
 	//test purpose
