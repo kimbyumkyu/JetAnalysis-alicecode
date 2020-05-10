@@ -3,11 +3,25 @@ Submit a job :  ./run.sh  [TaskName]  [DataPeriod]  full
 2. The unique folder is created in you grid home as [TaskName][DataPeriod]. 
 3. If you want to avoid "overwrite", please change the TaskName if the DataPeriod is not changed or delete the folder in your grid folder. There would be saving error if you don't remove the previous folder having the exactly same folder name. 
 
-Downloading a job after the job finishes : ./run.sh [TaskName] [DataPeriod] download
+Downloading a job after the job finishes : ./run.sh [TaskName] [DataPeriod] terminate
 1. Downloading will be done in ~/alice. 
-2. If your download is the first time after the job finishes, please remove ~/alice directory if it exists to avoid the previous job results. 
-3. If your download exits unexpectedly, it resumes again by executing again "./run.sh [TaskName] [DataPeriod] download"
-4. If you want to check the result in middle of job running, you can download first by this line. Because this line downloads currently finished jobs. If you execute this line again  some time later if will check if the results are downloaded or not. If jobs are already downloaded it does not copy from the grid and ignore it in order to avoid overwrite problem. If there are new results, it will download them in your ~/alice folder. 
+2. If your downloading is the first time after the job finishes, please remove ~/alice directory if it exists to avoid the previous job results. 
+3. If your downloading exits unexpectedly, it resumes again by executing again "./run.sh [TaskName] [DataPeriod] terminate"
+4. If you want to check the result in middle of job running, you can download first by this line. Because this line downloads the files of finished jobs up to the time. If you execute this line again some time later it will check if the results are downloaded or not. If jobs are already downloaded it does not copy from the grid and ignore it in order to avoid overwrite problem. If there are new results, it will download them in your ~/alice folder. 
+
+How to analyze LHC13d period (p-Pb 5.02 TeV, EMCAL trigger)
+1. ./run.sh Jt LHC13dAOD full
+2. Check alimonitor.cern.ch to check if your jobs have been almost finished. 
+3. ./run.sh Jt LHC13dAOD terminate
+4. Check the merged folder "JtLHC13dAOD" in your desktop folder "~/Desktop"
+5. make your result folder "results" and macro folder "macros". You need to be sure that those folders should be in the same level to your sourcecode like
+   Some directory (..)
+   Current directory (.) results  sourcecode macros
+6. The folder of "macros" is the git folder. 
+   git clone git@github.com:kimbyumkyu/JetAnalysis-macros.git ./macros
+7. If your result folder is in the expected location (./results/JtLHC13dAOD), then you can run "root ./macros/RawJetPt.C" to draw raw jT distributions. 
+
+
 
 
 

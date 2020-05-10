@@ -195,6 +195,7 @@ void AliBKJetAnalysis::UserCreateOutputObjects()
 	CreateTHnSparse("hJetPtFullJet", "Inclusive jet pt", 3, {binCent, binjetpt, binpthardbin}, "s");
 	CreateTHnSparse("hJetJt", "Inclusive jet jt", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
 	CreateTHnSparse("hJetJtWeight", "Inclusive jet jt over jt", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
+	CreateTHnSparse("hPerpJtWeight", "Perpendicular jt over jt", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
 	CreateTHnSparse("hJetJtBeforeCorr", "Inclusive jet jt before correction", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
 	CreateTHnSparse("hJetJtBeforeMatching", "Jet jt before mathcing", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
 	CreateTHnSparse("hJetJtTruth", "Inclusive Gen jet jt", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
@@ -678,10 +679,10 @@ Bool_t AliBKJetAnalysis::Run()
 	TLorentzVector T;
 	this->MeasureJets(fulljetContainer, RecFullJets, RecFullJetsBeforeCorr, false, true);
 	if (IsGoodVertex){
-		for (auto rj : RecFullJets){
-			fHistos->FillTH1("fulljetpt", rj.Pt());
-			fHistos->FillTH1("fulljeteta", rj.Eta());
-			FillTHnSparse("hJetPtFullJet", {fCent, rj.Pt(), pthardbin}, sf);
+		for (auto jet : RecFullJets){
+			fHistos->FillTH1("fulljetpt", jet.Pt());
+			fHistos->FillTH1("fulljeteta", jet.Eta());
+			FillTHnSparse("hJetPtFullJet", {fCent, jet.Pt(), pthardbin}, sf);
 			for (int itrack = 0; itrack < trkContainer->GetNParticles(); itrack++)
 			{
 				AliAODTrack *track = static_cast<AliAODTrack *>(trkContainer->GetParticle(itrack));
@@ -689,13 +690,31 @@ Bool_t AliBKJetAnalysis::Run()
 					continue;
 				T.SetXYZM(track->Px(), track->Py(), track->Pz(), pionmass);
 				fHistos->FillTH2("trketaphi", track->Eta(), track->Phi());
-				deltaR = getDiffR(rj.Phi(), track->Phi(), rj.Eta(), track->Eta());
+				deltaR = getDiffR(jet.Phi(), track->Phi(), jet.Eta(), track->Eta());
 				if (deltaR>radius)
 					continue;
-				z = (T.Vect() * rj.Vect().Unit()) / rj.P();
-				jt = (T.Vect() - z * rj.Vect()).Mag();
-				FillTHnSparse("hJetJt", {fCent, rj.Pt(), z, jt, pthardbin}, sf);
-				FillTHnSparse("hJetJtWeight", {fCent, rj.Pt(), z, jt, pthardbin}, sf/jt);
+				z = (T.Vect() * jet.Vect().Unit()) / jet.P();
+				jt = (T.Vect() - z * jet.Vect()).Mag();
+				FillTHnSparse("hJetJt", {fCent, jet.Pt(), z, jt, pthardbin}, sf);
+				FillTHnSparse("hJetJtWeight", {fCent, jet.Pt(), z, jt, pthardbin}, sf/jt);
+			}
+			// Perpendicular bg jt
+			TLorentzVector vOrtho;
+			vOrtho.SetVect(jet->Vect());
+			vOrtho.SetE(jet->E());
+			vOrtho.SetPhi(jet->Phi() + TMath::Pi() / 2);
+			for (int itrack = 0; itrack < trkContainer->GetNParticles(); itrack++)
+			{
+				AliAODTrack *track = static_cast<AliAODTrack *>(trkContainer->GetParticle(itrack));
+				if (!track)
+					continue;
+				T.SetXYZM(track->Px(), track->Py(), track->Pz(), pionmass);
+				deltaR = getDiffR(vOrtho.Phi(), track->Phi(), vOrtho.Eta(), track->Eta());
+				if (deltaR>radius)
+					continue;
+				z = (T.Vect() * vOrtho.Vect().Unit()) / vOrtho.P();
+				jt = (T.Vect() - z * vOrtho.Vect()).Mag();
+				FillTHnSparse("hPerpJtWeight", {fCent, vOrtho.Pt(), z, jt, pthardbin}, sf/jt);
 			}
 		}
 	}
