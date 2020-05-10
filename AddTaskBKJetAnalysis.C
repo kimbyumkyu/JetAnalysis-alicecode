@@ -18,6 +18,7 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
   AliEmcalJetTask *jetFinderTaskkt;
   AliEmcalJetTask *jetFinderTaskkine;
   AliEmcalJetTask *jetFinderTaskkineFullJet;
+  AliEmcalJetTask *jetFinderTaskktFullJet;
   //TString trackcontname = option.Contains("Emb") ? "PicoTracksMer" : "tracks";
   //TString trackcontname  = "tracks";
   //TString mccontname="mcparticles";
@@ -25,6 +26,7 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
   jetFinderTask = AddTaskEmcalJet("usedefault", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("Jets%s", Option.Data()), 0.);
   jetFinderTaskkt = AddTaskEmcalJet("usedefault", "", AliJetContainer::kt_algorithm, 0.2, AliJetContainer::kChargedJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("JetsKt%s", Option.Data()), 0.);
   jetFinderTaskFullJet = AddTaskEmcalJet("usedefault", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("FullJets%s", Option.Data()), 0.);
+  jetFinderTaskktFullJet = AddTaskEmcalJet("usedefault", "", AliJetContainer::kt_algorithm, 0.2, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("JetsKt%s", Option.Data()), 0.);
 
   if (Option.Contains("Emb") || Option.Contains("MC"))
   {
@@ -38,9 +40,10 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
   task->SetLeadingParticlePtMin(5);
   //task->SelectCollisionCandidates( Option.Contains("MC") ? AliVEvent::kAny : AliVEvent::kINT7 );
 
-  AliJetContainer *jetCont = task->AddJetContainer(jetFinderTask->GetName(), "TPC");
-  AliJetContainer *jetContKt = task->AddJetContainer(jetFinderTaskkt->GetName(), "TPC");
+  AliJetContainer *jetCont = task->AddJetContainer(jetFinderTask->GetName(), "TPCfid");
+  AliJetContainer *jetContKt = task->AddJetContainer(jetFinderTaskkt->GetName(), "TPCfid");
   AliJetContainer *jetContFullJet = task->AddJetContainer(jetFinderTask->GetName(), "EMCALfid");
+  AliJetContainer *jetContKtFullJet = task->AddJetContainer(jetFinderTaskktFullJet->GetName(), "EMCALfid");
 
   AliTrackContainer *trackCont = task->AddTrackContainer("usedefault");
   trackCont->SetFilterHybridTracks(true);
@@ -54,6 +57,7 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
   }
   jetCont->ConnectParticleContainer(trackCont);
   jetContKt->ConnectParticleContainer(trackCont);
+  jetContKtFullJet->ConnectParticleContainer(trackCont);
   jetContFullJet->ConnectParticleContainer(trackCont);
   jetContFullJet->ConnectClusterContainer(clusterCont);
 

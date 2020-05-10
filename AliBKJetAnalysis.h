@@ -46,7 +46,7 @@ public:
   void SetIsMC(Bool_t ismc){fIsMC = ismc;};
   void SetScalingFactorHist(TH1D* sfhist) {fScalingFactorHist = (TH1D*)sfhist->Clone();};
   void SetPtHardBin(double b) {pthardbin = b;};
-  Double1D& GetDijetPtPair(){return fDijetPtPair;};
+  Double1D &GetDijetPtPair() { return fDijetPtPair; };
   Double1D& GetDijetInvM(){return fDijetInvM;};
   Bool1D& GetDijetSelectionCut(){return fDijetSelectionCut;};
   TLorentzVector1D& GetJets(){return fJets;};
@@ -63,8 +63,9 @@ protected:
   Long64_t FillTHnSparse( THnSparse *h, std::vector<Double_t> x, Double_t w=1. );
 	void MeasureBgDensity (AliJetContainer* ktContainer);
 	Bool_t MeasurePtHardBinScalingFactor ();
-  Bool_t  MeasureJets(AliJetContainer* jetContainer, TLorentzVector1D &Jets, TLorentzVector1D &JetsBeforeCorr, Bool_t istruth);
+  Bool_t  MeasureJets(AliJetContainer* jetContainer, TLorentzVector1D &Jets, TLorentzVector1D &JetsBeforeCorr, Bool_t istruth, Bool_t isfulljet);
 	void CheckDijetSelections(TLorentzVector1D Jets, TLorentzVector2D &sj, Bool1D &disel);
+  Double_t getDiffR(double phi1, double phi2, double eta1, double eta2);
  
 private:
   TList*                          fOutput = nullptr; //!

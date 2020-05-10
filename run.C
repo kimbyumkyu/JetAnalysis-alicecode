@@ -28,7 +28,7 @@ class AliBKJetAnalysis;
 AliAnalysisManager *mgr = 0x0;
 //AliBKJetAnalysis * AddTaskBSDiJet(TString taskname, TString option );
 void run(
-	const char *taskname = "Dijet", const char *option = "LHC17pAOD" // when scanning AOD, add "AOD"
+	const char *taskname = "Test", const char *option = "LHC13dAOD" // when scanning AOD, add "AOD"
 	,
 	const char *gridmode = "full" // or "terminate" to merge
 	,
@@ -67,8 +67,8 @@ void run(
 	//const int LHC15nRuns[]={244531};
 	const int LHC13cRuns[]={195677, 195675, 195673, 195644, 195635, 195633, 195596, 195593, 195592, 195568, 195567, 195566, 195531, 195529};
 
-	//const int LHC13dRuns[] = {195872, 195867, 195831, 195829, 195827, 195826, 195787, 195783, 195767, 195760, 195724};
-	const int LHC13dRuns[] = {195872};
+	const int LHC13dRuns[] = {195872, 195867, 195831, 195829, 195787, 195783, 195767, 195760, 195724};
+	//const int LHC13dRuns[] = {195872};
 
 	if (foption.Contains("LHC15n")){
 		if (!foption.Contains("MC")) {
@@ -102,7 +102,7 @@ void run(
 		for (int i = 0; i < sizeof(LHC13dRuns) / sizeof(LHC13dRuns[0]); i++)
 			//for (int i=0; i<1; i++)
 			plugin->AddRunNumber(LHC13dRuns[i]);
-		plugin->SetDataPattern("/pass2/AOD154/*/AliAOD.root");
+		plugin->SetDataPattern("/pass4/AOD210/*/AliAOD.root");
 		isAA = true;
 	}
 
