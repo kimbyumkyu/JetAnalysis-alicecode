@@ -34,6 +34,12 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
     jetFinderTaskkineFullJet = AddTaskEmcalJet("mcparticles", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("Jetsmc%s", Option.Data()), 0.);
   }
 
+  AliAnalysisTaskRhoSparse *rhosparse = AddTaskRhoSparse("usedefault", "usedefault", "Rho", 0.2, AliEmcalJet::kTPCfid, AliJetContainer::kChargedJet, AliJetContainer::pt_scheme, kTRUE, "", "TPC", 0.15, 0.01, 0, "");
+  if (Option.Contains("LHC13d") || Option.Contains("LHC13e"))
+    rhosparse->SelectCollisionCandidates(AliVEvent::kEMCEJE);
+  else
+    rhosparse->SelectCollisionCandidates(AliVEvent::kINT7);
+
   // Own class
   AliBKJetAnalysis *task = new AliBKJetAnalysis(taskname, option);
   task->SetIsAA(isaa);
@@ -56,6 +62,7 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
     jetFinderTaskkt->AdoptParticleContainer(trackCont);
   }
   jetCont->ConnectParticleContainer(trackCont);
+  jetCont->SetRhoName("Rho");
   jetContKt->ConnectParticleContainer(trackCont);
   jetContKtFullJet->ConnectParticleContainer(trackCont);
   jetContFullJet->ConnectParticleContainer(trackCont);

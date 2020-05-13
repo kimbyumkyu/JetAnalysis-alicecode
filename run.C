@@ -18,6 +18,9 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/)
 #include "AddTaskEmcalJet.C"
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS/PWG/EMCAL/macros/)
 #include "AddTaskEmcalCorrectionTask.C"
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/)
+#include "AddTaskRhoSparse.C"
+
 //#include "AliBKJetAnalysis.h"
 //R__LOAD_LIBRARY(AliBKJetAnalysis.cxx)
 //#include "AddTaskBSDiJet.C"
@@ -68,6 +71,8 @@ void run(
 	const int LHC13cRuns[]={195677, 195675, 195673, 195644, 195635, 195633, 195596, 195593, 195592, 195568, 195567, 195566, 195531, 195529};
 
 	const int LHC13dRuns[] = {195872, 195867, 195831, 195829, 195787, 195783, 195767, 195760, 195724};
+	const int LHC16lRuns[] = {259888, 259868, 259867, 259866, 259860, 259842, 259841, 259822, 259788, 259781, 259756, 259752, 259751, 259750, 259748, 259747, 259477, 259473, 259396, 259395, 259394, 259389, 259388, 259382, 259378, 259342, 259341, 259340, 259339, 259336, 259334, 259307, 259305, 259302, 259274, 259273, 259272, 259271, 259270, 259269, 259164, 259118, 259117, 259099, 259096, 259091, 259090, 259088, 258964, 258962};
+
 	//const int LHC13dRuns[] = {195872};
 
 	if (foption.Contains("LHC15n")){
@@ -166,6 +171,16 @@ void run(
 			}
 		}
 	}
+	if (foption.Contains("LHC16l"))
+	{
+		plugin->SetGridDataDir("/alice/data/2016/LHC16l/");
+		plugin->SetDataPattern("/AOD208/*/AliAOD.root");
+		plugin->SetSplitMaxInputFileNumber(25);
+
+		//for (int i = 0; i < sizeof(LHC16lRuns) / sizeof(LHC16lRuns[0]); i++)
+		for (int i = 0; i < 20; i++)
+			plugin->AddRunNumber(LHC16lRuns[i]);
+	}
 
 	plugin->SetGridWorkingDir(Form("%s%s", taskname, option));
 	plugin->SetGridOutputDir("out");
@@ -218,7 +233,7 @@ void run(
 	}
 
 	AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(foption.Contains("MC") ? true : false);
-	AliMultSelectionTask *multtask = AddTaskMultSelection(false); 
+	AliMultSelectionTask *multtask = AddTaskMultSelection(false);
 
 
 	gInterpreter->LoadMacro("AliBKJetAnalysis.cxx+g");

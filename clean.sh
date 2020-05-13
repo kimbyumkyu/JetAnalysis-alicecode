@@ -5,3 +5,4 @@ rm *_cxx.d
 rm *.xml
 rm Dijet*
 rm *.root
+rm *.pcm
