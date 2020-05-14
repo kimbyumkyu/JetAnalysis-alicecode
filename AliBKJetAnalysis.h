@@ -19,6 +19,7 @@ class AliAnalysisUtils;
 class AliCalorimeterUtils;
 class AliMultSelection;
 class AliJetContainer;
+class AliAnalysisTaskRhoSparse;
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include <vector>
@@ -92,7 +93,8 @@ private:
   Bool_t                          IsGenGoodVtx = false;
   TAxis                           binJetTPtCut; //!
   TAxis                           binJetPtCut; //!
-  AliVEvent*                      fEvt=nullptr;//!
+  TAxis                           binningpthard; //!
+  AliVEvent *fEvt = nullptr;                           //!
   AliCalorimeterUtils*            fCaloUtils = nullptr;//!
   TClonesArray*                   fMCArray=nullptr; //!
   AliMultSelection*               sel=nullptr;//!

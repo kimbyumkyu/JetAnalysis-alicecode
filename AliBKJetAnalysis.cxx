@@ -66,6 +66,7 @@
 #include "AliMultSelection.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 #include "AliInputEventHandler.h"
+#include "AliAnalysisTaskRhoSparse.h"
 const Double_t pionmass = AliPID::ParticleMass(AliPID::kPion);
 const Double_t pi = TMath::Pi();
 
@@ -131,15 +132,16 @@ void AliBKJetAnalysis::UserCreateOutputObjects()
 	auto bin1c = AxisFix("Fix1c", 100, 0, 100);
 	auto binAsim = AxisFix("Asim", 100, 0, 1);
 	auto binM = AxisFix("BinM", 600, -300, 300);
-	auto binpthardbin = AxisFix("pthardbin", 20, 0, 20);
+	auto binpthardbin = AxisFix("pthardbin", fOption.Contains("LHC13")? 10 : 20, 0, fOption.Contains("LHC13")? 10 : 20);
 	auto binjetpt = AxisVar("binjetpt", {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 65, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 450, 500, 550, 600, 650, 700, 800, 900, 1000, 5000});
 	auto binjt = AxisLog("JtBin", 40, 0.01, 10, 0);
 	auto binz = AxisFix("zbin", 5, 0, 1);
-	//auto binjetpt = AxisVar("binjetpt", {0,2,4,6,8,10,12,14,16,18,20, 25.0, 30.0, 40.0, 50.0, 60.0, 70.0, 85.0, 100.0,120,150,200,500,1000,5000});
 
-	//auto binjetpt = AxisVar("binjetpt",{0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,300,400,500,1000,5000});
-	//auto binjetpt = AxisLog("binjetpt", 50, 1, 500, 1);
-	//auto binjetpt = AxisFix("binjetpt",30,0,300);
+	//https://alimonitor.cern.ch/users/download.jsp?view=true&path=/alice/cern.ch/user/a/aliprod/bin/simrun.sh
+	if (fOption.Contains("LHC13"))
+		binningpthard = AxisVar("binpthard", {0, 5, 11, 21, 36, 57, 84, 117, 152, 191, 234});
+	else 
+		binningpthard = AxisVar("binprhard", {5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000});
 
 	//===============================
 	// HISTOGRAMS
@@ -161,6 +163,7 @@ void AliBKJetAnalysis::UserCreateOutputObjects()
 	fHistos->CreateTH2("trketaphi", "trketaphi", 20, -1, 1, 90, 0, TMath::TwoPi(), "s");
 	fHistos->CreateTH2("jetetaphi", "jetetaphi", 20, -1, 1, 90, 0, TMath::TwoPi(), "s");
 	fHistos->CreateTH1("fulljetpt", "fulljetpt", 300, 0, 300, "s");
+	fHistos->CreateTH1("fulljettruept", "fulljettruept", 300, 0, 300, "s");
 	fHistos->CreateTH1("fulljeteta", "fulljeteta", 40, -2, 2, "s");
 	fHistos->CreateTH1("z4060", "z4060", 2000, 0, 1, "s");
 	fHistos->CreateTH1("z6080", "z6080", 2000, 0, 1, "s");
@@ -193,6 +196,7 @@ void AliBKJetAnalysis::UserCreateOutputObjects()
 	CreateTHnSparse("hJetPtMiss", "Inclusive jet pt  missing tracks", 3, {binCent, binjetpt, binpthardbin}, "s");
 
 	CreateTHnSparse("hJetPtFullJet", "Inclusive jet pt", 3, {binCent, binjetpt, binpthardbin}, "s");
+	CreateTHnSparse("hTrueJetPtFullJet", "Inclusive jet pt", 3, {binCent, binjetpt, binpthardbin}, "s");
 	CreateTHnSparse("hJetJt", "Inclusive jet jt", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
 	CreateTHnSparse("hJetJtWeight", "Inclusive jet jt over jt", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
 	CreateTHnSparse("hPerpJtWeight", "Perpendicular jt over jt", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
@@ -267,6 +271,9 @@ Bool_t AliBKJetAnalysis::Run()
 		IsMinimumBias = inputHandler->IsEventSelected() & AliVEvent::kEMCEJE;
 	else
 		IsMinimumBias = inputHandler->IsEventSelected() & AliVEvent::kINT7;
+
+	if (fOption.Contains("MC"))
+		IsMinimumBias = inputHandler->IsEventSelected() & AliVEvent::kAny;
 	//IsMinimumBias = inputHandler->IsEventSelected() & AliVEvent::kEMCEJE;
 	//if (fOption.Contains("MC") || fOption.Contains("Emb"))
 	//	IsMinimumBias = inputHandler->IsEventSelected() & AliVEvent::kAny;
@@ -355,6 +362,7 @@ Bool_t AliBKJetAnalysis::Run()
 	auto cluContainer = GetClusterContainer(0);
 	auto ktContainer = GetJetContainer(1);
 	auto fulljetContainer = GetJetContainer(2);
+	auto ktfulljetContainer = GetJetContainer(3);
 
 	AliJetContainer *mcContainer = nullptr;
 	AliJetContainer *mcFullJetContainer = nullptr;
@@ -367,7 +375,13 @@ Bool_t AliBKJetAnalysis::Run()
 		//cout<<"MC jet Container name : "<<mcContainer -> GetName()<<endl;
 	}
 
-	FillTHnSparse("hRho", {fCent, jetContainer->GetRhoVal(), pthardbin}, sf);
+	//AliAnalysisTaskRhoSparse *fRho = (AliAnalysisTaskRhoSparse *)(AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskRhoSparse"));
+	//if (jetContainer->GetRhoParameter())
+	cout << "Rho name " << ktContainer->GetRhoName() << endl;
+	AliRhoParameter *rhoParam = dynamic_cast<AliRhoParameter *>(InputEvent()->FindListObject("Rho"));
+	cout << "RhoValue = " << rhoParam->GetVal() << endl;
+
+	FillTHnSparse("hRho", {fCent, ktContainer->GetRhoVal(), pthardbin}, sf);
 	// =============================
 	// QA plots
 	// ============================
@@ -375,6 +389,7 @@ Bool_t AliBKJetAnalysis::Run()
 	//simple full jet test start
 
 	//
+
 
 	for (auto trk : trkContainer->all())
 	{
@@ -662,9 +677,6 @@ Bool_t AliBKJetAnalysis::Run()
 	if (IsGoodVertex)
 	{
 		for (auto jet : RecFullJets){
-			fHistos->FillTH1("fulljetpt", jet.Pt());
-			fHistos->FillTH1("fulljeteta", jet.Eta());
-			FillTHnSparse("hJetPtFullJet", {fCent, jet.Pt(), pthardbin}, sf);
 			for (int itrack = 0; itrack < trkContainer->GetNParticles(); itrack++)
 			{
 				AliAODTrack *track = static_cast<AliAODTrack *>(trkContainer->GetParticle(itrack));
@@ -725,11 +737,13 @@ Bool_t AliBKJetAnalysis::Run()
 			TLorentzVector1D rjets = RecFullJets;
 			for (auto pj : pjets)
 			{
+
+				FillTHnSparse("hTrueJetPtFullJet", {fCent, pj.Pt(), pthardbin}, sf);
 				TLorentzVector maxjet(0, 0, 0, 0);
 				Double_t leastdr = 10;
 				for (auto rj : rjets)
 				{
-					if (rj.DeltaR(pj) < 0.2 && maxjet.Pt() < rj.Pt())
+					if (rj.DeltaR(pj) < 0.24 && maxjet.Pt() < rj.Pt())
 					{
 						maxjet = rj;
 					}
@@ -737,13 +751,15 @@ Bool_t AliBKJetAnalysis::Run()
 				if (maxjet.Pt() > 0)
 				{
 					matchedjets.push_back(maxjet);
+
+					FillTHnSparse("hJetPtFullJet", {fCent, maxjet.Pt(), pthardbin}, sf);
 					rjets.erase(std::remove_if(rjets.begin(), rjets.end(), [&](const TLorentzVector &x) { return x.Pt() == maxjet.Pt(); }), rjets.end());
 					for (int itrack = 0; itrack < trkContainer->GetNParticles(); itrack++)
 					{
 						AliAODTrack *track = static_cast<AliAODTrack *>(trkContainer->GetParticle(itrack));
 						if (!track)
 							continue;
-						if (fabs(track->Eta()) > (0.25 + radius))
+						if (fabs(track->Eta()) > (0.3 + radius))
 							continue;
 						if (!(((AliAODTrack *)track)->TestFilterBit(768)))
 							continue; // primary charged track selection
@@ -906,8 +922,6 @@ Bool_t AliBKJetAnalysis::MeasurePtHardBinScalingFactor()
 	XSection = -1;
 	genzvtx = -30;
 
-	TAxis binningpthard;
-	binningpthard = AxisVar("binprhard", {5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000});
 
 	if (fIsMC)
 	{
@@ -993,7 +1007,8 @@ Bool_t AliBKJetAnalysis::MeasurePtHardBinScalingFactor()
 	}
 	//The method above doesn't work for MC 13b4_fix and plus AOD files
 	//For these MC productions, the method below is used..
-	if (fOption.Contains("13plus") || fOption.Contains("12a15e") || fOption.Contains("12a15f") || fOption.Contains("13e4") || fOption.Contains("13fix"))
+	if (fOption.Contains("LHC13"))
+	//if (fOption.Contains("13plus") || fOption.Contains("12a15e") || fOption.Contains("12a15f") || fOption.Contains("13e4") || fOption.Contains("13fix"))
 	{
 		TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
 		if (!tree)
@@ -1099,7 +1114,7 @@ Bool_t AliBKJetAnalysis::MeasureJets(AliJetContainer *jetContainer, TLorentzVect
 		//Jets.push_back(sum);
 		//}
 
-		Double_t jetetacut = isfulljet ? 0.25  : 0.5 ; 
+		Double_t jetetacut = isfulljet ? 0.3  : 0.5 ; 
 		if (istruth || !fIsAA)
 		{
 			if (fabs(sum.Eta()) < jetetacut)

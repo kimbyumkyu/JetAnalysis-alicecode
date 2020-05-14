@@ -20,6 +20,8 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS/PWG/EMCAL/macros/)
 #include "AddTaskEmcalCorrectionTask.C"
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/)
 #include "AddTaskRhoSparse.C"
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/)
+#include "AddTaskRhoNew.C"
 
 //#include "AliBKJetAnalysis.h"
 //R__LOAD_LIBRARY(AliBKJetAnalysis.cxx)
@@ -49,7 +51,7 @@ void run(
 	AliAnalysisAlien *plugin = new AliAnalysisAlien();
 	plugin->SetRunMode(gridmode);
 	plugin->SetAPIVersion("V1.1x");
-	plugin->SetAliPhysicsVersion("vAN-20200425_ROOT6-1");
+	plugin->SetAliPhysicsVersion("vAN-20200510_ROOT6-1");
 	plugin->SetDropToShell(0);
 	if (!foption.Contains("MC"))
 		plugin->SetRunPrefix("000");
@@ -103,12 +105,23 @@ void run(
 	}
 	if (foption.Contains("LHC13d"))
 	{
-		plugin->SetGridDataDir("/alice/data/2013/LHC13d/");
-		for (int i = 0; i < sizeof(LHC13dRuns) / sizeof(LHC13dRuns[0]); i++)
-			//for (int i=0; i<1; i++)
-			plugin->AddRunNumber(LHC13dRuns[i]);
-		plugin->SetDataPattern("/pass4/AOD210/*/AliAOD.root");
-		isAA = true;
+		if (!foption.Contains("MC"))
+		{
+			plugin->SetGridDataDir("/alice/data/2013/LHC13d/");
+			for (int i = 0; i < sizeof(LHC13dRuns) / sizeof(LHC13dRuns[0]); i++)
+				//for (int i=0; i<1; i++)
+				plugin->AddRunNumber(LHC13dRuns[i]);
+			plugin->SetDataPattern("/pass4/AOD210/*/AliAOD.root");
+			plugin->SetSplitMaxInputFileNumber(5);
+			isAA = true;
+		}
+		else {
+			//alien_find -x LHC15oMC16j5.xml  /alice/sim/2016/LHC16j5/  /AOD200/*/AliAOD.root  > LHC15oMC16j5.xml
+			plugin->AddDataFile("/alice/cern.ch/user/k/kimb/LHC13b4_plus.xml");
+			isAA = false;
+			plugin->SetSplitMaxInputFileNumber(25);
+
+		}
 	}
 
 	if (foption.Contains("LHC15o"))
@@ -186,7 +199,7 @@ void run(
 	plugin->SetGridOutputDir("out");
 	plugin->AddIncludePath("-I$ALICE_ROOT/include  -I$ALICE_ROOT/lib -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/lib -I$ALICE_PHYSICS/OADB/macros");
 	plugin->SetAnalysisSource("AliBKJetAnalysis.cxx");
-	plugin->SetAdditionalLibs("libqpythia.so libAliPythia6.so libTree.so libGeom.so libVMC.so libPhysics.so libMinuit.so libGui.so libXMLParser.so libMinuit2.so libProof.so libSTEERBase.so libESD.so libAOD.so libOADB.so libANALYSIS.so libANALYSISalice.so libCDB.so libRAWDatabase.so libSTEER.so libCORRFW.so libEMCALUtils.so libPHOSUtils.so libJETAN.so libEMCALraw.so libEMCALbase.so libEMCALrec.so libTRDbase.so libVZERObase.so libVZEROrec.so libPWGLFforward2.so libPWGTools.so libPWGEMCALtasks.so libCGAL.so libfastjet.so libsiscone.so libsiscone_spherical.so libfastjetplugins.so libfastjettools.so libfastjetcontribfragile.so  AliBKJetAnalysis.cxx AliBKJetAnalysis.h");
+	plugin->SetAdditionalLibs("libqpythia.so libAliPythia6.so libTree.so libGeom.so libVMC.so libPhysics.so libMinuit.so libGui.so libXMLParser.so libMinuit2.so libProof.so libSTEERBase.so libESD.so libAOD.so libOADB.so libANALYSIS.so libANALYSISalice.so libCDB.so libRAWDatabase.so libSTEER.so libCORRFW.so libEMCALUtils.so libPHOSUtils.so libJETAN.so libEMCALraw.so libEMCALbase.so libEMCALrec.so libTRDbase.so libVZERObase.so libVZEROrec.so libPWGLFforward2.so libPWGTools.so libPWGEMCALtasks.so libCGAL.so libfastjet.so libsiscone.so libsiscone_spherical.so libfastjetplugins.so libfastjettools.so libfastjetcontribfragile.so  AliBKJetAnalysis.cxx AliBKJetAnalysis.h AliEmcalCorrectionConfiguration.yaml");
 	plugin->SetDefaultOutputs(kFALSE);
 	plugin->SetOutputArchive();
 	//plugin->SetOutputFiles("AnalysisResults.root RecTree.root");
@@ -234,7 +247,6 @@ void run(
 
 	AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(foption.Contains("MC") ? true : false);
 	AliMultSelectionTask *multtask = AddTaskMultSelection(false);
-
 
 	gInterpreter->LoadMacro("AliBKJetAnalysis.cxx+g");
 
