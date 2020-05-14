@@ -136,6 +136,8 @@ void AliBKJetAnalysis::UserCreateOutputObjects()
 	auto binjetpt = AxisVar("binjetpt", {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 65, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 450, 500, 550, 600, 650, 700, 800, 900, 1000, 5000});
 	auto binjt = AxisLog("JtBin", 40, 0.01, 10, 0);
 	auto binz = AxisFix("zbin", 5, 0, 1);
+	auto binjetmultiplicity = AxisFix("mbin", 50, 0, 50);
+	auto binjes = AxisFix("jesbin", 100, -1, 1);
 
 	//https://alimonitor.cern.ch/users/download.jsp?view=true&path=/alice/cern.ch/user/a/aliprod/bin/simrun.sh
 	if (fOption.Contains("LHC13"))
@@ -195,8 +197,13 @@ void AliBKJetAnalysis::UserCreateOutputObjects()
 	CreateTHnSparse("hJetPtFake", "Inclusive jet pt fake tracks", 3, {binCent, binjetpt, binpthardbin}, "s");
 	CreateTHnSparse("hJetPtMiss", "Inclusive jet pt  missing tracks", 3, {binCent, binjetpt, binpthardbin}, "s");
 
-	CreateTHnSparse("hJetPtFullJet", "Inclusive jet pt", 3, {binCent, binjetpt, binpthardbin}, "s");
-	CreateTHnSparse("hTrueJetPtFullJet", "Inclusive jet pt", 3, {binCent, binjetpt, binpthardbin}, "s");
+	CreateTHnSparse("hFullJetPt", "Inclusive jet pt", 3, {binCent, binjetpt, binpthardbin}, "s");
+	CreateTHnSparse("hTrueFullJetPt", "Inclusive jet pt", 3, {binCent, binjetpt, binpthardbin}, "s");
+	CreateTHnSparse("hTrueFullJetPtMatched", "Inclusive jet pt", 3, {binCent, binjetpt, binpthardbin}, "s");
+	CreateTHnSparse("hFullJetMultiplicity", "Inclusive jet pt", 3, {binCent, binjetmultiplicity, binpthardbin}, "s");
+	CreateTHnSparse("hTrueFullJetMultiplicity", "Inclusive jet pt", 3, {binCent, binjetmultiplicity, binpthardbin}, "s");
+	CreateTHnSparse("hFullJetJES", "Full jet pt jes", 4, {binCent, binjetpt, binjes,binpthardbin}, "s");
+
 	CreateTHnSparse("hJetJt", "Inclusive jet jt", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
 	CreateTHnSparse("hJetJtWeight", "Inclusive jet jt over jt", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
 	CreateTHnSparse("hPerpJtWeight", "Perpendicular jt over jt", 5, {binCent, binjetpt, binz, binjt, binpthardbin}, "s");
@@ -463,7 +470,7 @@ Bool_t AliBKJetAnalysis::Run()
 					Double_t leastdr = 10;
 					for (auto rj : rjets)
 					{
-						if (rj.DeltaR(pj) < 0.25 && maxjet.Pt() < rj.Pt())
+						if (rj.DeltaR(pj) < 0.24 && maxjet.Pt() < rj.Pt())
 						{
 							maxjet = rj;
 						}
@@ -471,6 +478,7 @@ Bool_t AliBKJetAnalysis::Run()
 					if (maxjet.Pt() > 0)
 					{
 						matchedjets.push_back(maxjet);
+						FillTHnSparse("hJetPt", {fCent, maxjet.Pt(), pthardbin}, sf);
 						rjets.erase(std::remove_if(rjets.begin(), rjets.end(), [&](const TLorentzVector &x) { return x.Pt() == maxjet.Pt(); }), rjets.end());
 						FillTHnSparse("hJetPtRes", {fCent, maxjet.Pt(), pj.Pt(), pthardbin}, sf);
 						FillTHnSparse("hJetMassRes", {fCent, maxjet.M(), pj.M(), pthardbin}, sf);
@@ -512,7 +520,7 @@ Bool_t AliBKJetAnalysis::Run()
 	{
 		for (auto rj : RecJets)
 		{
-			FillTHnSparse("hJetPt", {fCent, rj.Pt(), pthardbin}, sf);
+			//FillTHnSparse("hJetPt", {fCent, rj.Pt(), pthardbin}, sf);
 			FillTHnSparse("hJetMass", {fCent, rj.M(), pthardbin}, sf);
 		}
 		for (auto rj : RecJetsBeforeCorr)
@@ -673,7 +681,6 @@ Bool_t AliBKJetAnalysis::Run()
 	auto radius = fulljetContainer->GetJetRadius();
 	TLorentzVector T;
 	this->MeasureJets(fulljetContainer, RecFullJets, RecFullJetsBeforeCorr, false, true);
-	matchedjets.clear();
 	if (IsGoodVertex)
 	{
 		for (auto jet : RecFullJets){
@@ -727,6 +734,7 @@ Bool_t AliBKJetAnalysis::Run()
 
 		}
 	}
+	matchedjets.clear();
 	Double_t mcz = 0, mcjt = 0;
 	TLorentzVector MCT(0,0,0,0);
 	if ((fOption.Contains("Emb") || fOption.Contains("MC")))
@@ -735,10 +743,11 @@ Bool_t AliBKJetAnalysis::Run()
 		{
 			TLorentzVector1D pjets = TrueFullJets;
 			TLorentzVector1D rjets = RecFullJets;
+			FillTHnSparse("hTrueFullJetMultiplicity", {fCent, double(pjets.size()), pthardbin}, sf);
 			for (auto pj : pjets)
 			{
 
-				FillTHnSparse("hTrueJetPtFullJet", {fCent, pj.Pt(), pthardbin}, sf);
+				FillTHnSparse("hTrueFullJetPt", {fCent, pj.Pt(), pthardbin}, sf);
 				TLorentzVector maxjet(0, 0, 0, 0);
 				Double_t leastdr = 10;
 				for (auto rj : rjets)
@@ -752,7 +761,10 @@ Bool_t AliBKJetAnalysis::Run()
 				{
 					matchedjets.push_back(maxjet);
 
-					FillTHnSparse("hJetPtFullJet", {fCent, maxjet.Pt(), pthardbin}, sf);
+					FillTHnSparse("hTrueFullJetPtMatched", {fCent, pj.Pt(), pthardbin}, sf);
+					FillTHnSparse("hFullJetPt", {fCent, maxjet.Pt(), pthardbin}, sf);
+					FillTHnSparse("hFullJetJES", {fCent, pj.Pt(),(maxjet.Pt()-pj.Pt())/pj.Pt(), pthardbin}, sf);
+
 					rjets.erase(std::remove_if(rjets.begin(), rjets.end(), [&](const TLorentzVector &x) { return x.Pt() == maxjet.Pt(); }), rjets.end());
 					for (int itrack = 0; itrack < trkContainer->GetNParticles(); itrack++)
 					{
@@ -781,6 +793,7 @@ Bool_t AliBKJetAnalysis::Run()
 						FillTHnSparse("hJetJtRes", {fCent, maxjet.Pt(), pj.Pt(), z, jt, mcjt, pthardbin}, sf);
 					}
 				}
+				FillTHnSparse("hFullJetMultiplicity", {fCent, double(matchedjets.size()), pthardbin}, sf);
 			}
 		}
 	}
