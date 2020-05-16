@@ -6,3 +6,4 @@ rm *.xml
 rm Dijet*
 rm *.root
 rm *.pcm
+rm Test*

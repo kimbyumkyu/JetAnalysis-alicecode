@@ -24,18 +24,12 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
   //TString trackcontname = option.Contains("Emb") ? "PicoTracksMer" : "tracks";
   //TString trackcontname  = "tracks";
   //TString mccontname="mcparticles";
-  jetFinderTask = AddTaskEmcalJet("usedefault", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, "Jets", 0.);
-  jetFinderTaskkt = AddTaskEmcalJet("usedefault", "", AliJetContainer::kt_algorithm, 0.2, AliJetContainer::kChargedJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, "JetsKt", 0.);
-  jetFinderTaskFullJet = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("FullJets%s", Option.Data()), 0.);
+  jetFinderTask = AddTaskEmcalJet("usedefault", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, "Jets", 5.);
+  jetFinderTaskkt = AddTaskEmcalJet("usedefault", "", AliJetContainer::kt_algorithm, 0.2, AliJetContainer::kChargedJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, "JetsKt", 0);
+  jetFinderTaskFullJet = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("FullJets%s", Option.Data()), 5.);
   jetFinderTaskktFullJet = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::kt_algorithm, 0.2, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("FullJetsKt%s", Option.Data()), 0.);
 
 
-  AliAnalysisTaskRhoSparse *rhosparse = AddTaskRhoSparse("usedefault", "", "Rho", 0.2, AliEmcalJet::kTPCfid, AliJetContainer::kChargedJet, AliJetContainer::pt_scheme, kFALSE, "", "TPC", 0.15, 0.005, 0, "");
-  rhosparse->SetExcludeLeadJets(2);
-	if (Option.Contains("LHC13d") || Option.Contains("LHC13e"))
-		rhosparse->SelectCollisionCandidates(AliVEvent::kEMCEJE);
-	else
-    rhosparse->SelectCollisionCandidates(AliVEvent::kINT7);
 
 
 
@@ -45,6 +39,12 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
     jetFinderTaskkineFullJet = AddTaskEmcalJet("mcparticles", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("Jetsmc%s", Option.Data()), 0.);
   }
 
+  //AliAnalysisTaskRhoBase *rhosparse = AddTaskRhoSparse("usedefault", "usedefault", "Rho", 0.2, AliEmcalJet::kTPCfid, AliJetContainer::kChargedJet, AliJetContainer::pt_scheme, kFALSE, "", "TPC", 0.15, 0.005, 0, "");
+  //rhosparse->SetExcludeLeadJets(2);
+	//if (Option.Contains("LHC13d") || Option.Contains("LHC13e"))
+	//	rhosparse->SelectCollisionCandidates(AliVEvent::kEMCEJE);
+	//else
+  //  rhosparse->SelectCollisionCandidates(AliVEvent::kINT7);
 
   // Own class
   AliBKJetAnalysis *task = new AliBKJetAnalysis(taskname, option);
@@ -68,11 +68,9 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
     jetFinderTaskkt->AdoptParticleContainer(trackCont);
   }
   jetCont->ConnectParticleContainer(trackCont);
-  jetContKt->SetRhoName("Rho");
-  //jetContKt->SetRhoName("Rho");
-  //jetContFullJet->SetRhoName("Rho");
-  //jetContKtFullJet->SetRhoName("Rho");
   jetContKt->ConnectParticleContainer(trackCont);
+  //jetCont->SetRhoName("Rho");
+  //jetContKt->SetRhoName("Rho");
   jetContKtFullJet->ConnectParticleContainer(trackCont);
   jetContFullJet->ConnectParticleContainer(trackCont);
   jetContFullJet->ConnectClusterContainer(clusterCont);
@@ -83,6 +81,7 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
   if (Option.Contains("Emb") || Option.Contains("MC"))
   {
     mcCont = task->AddMCParticleContainer("mcparticles");
+    mcCont->SelectPhysicalPrimaries(kTRUE);
     AliJetContainer *jetContMC = task->AddJetContainer(jetFinderTaskkine->GetName(), "TPC");
     AliJetContainer *jetContMCFullJet = task->AddJetContainer(jetFinderTaskkineFullJet->GetName(), "EMCALfid");
     jetContMC->ConnectParticleContainer(mcCont);

@@ -384,11 +384,12 @@ Bool_t AliBKJetAnalysis::Run()
 
 	//AliAnalysisTaskRhoSparse *fRho = (AliAnalysisTaskRhoSparse *)(AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskRhoSparse"));
 	//if (jetContainer->GetRhoParameter())
-	cout << "Rho name " << ktContainer->GetRhoName() << endl;
-	AliRhoParameter *rhoParam = dynamic_cast<AliRhoParameter *>(InputEvent()->FindListObject("Rho"));
-	cout << "RhoValue = " << rhoParam->GetVal() << endl;
-
-	FillTHnSparse("hRho", {fCent, ktContainer->GetRhoVal(), pthardbin}, sf);
+	//cout << "Rho name " << ktContainer->GetRhoName() << endl;
+	//AliRhoParameter *rhoParam = dynamic_cast<AliRhoParameter *>(InputEvent()->FindListObject("Rho"));
+	//cout << "RhoValue = " << rhoParam->GetVal() << endl;
+	//cout << "RhoValue2 = " << jetContainer->GetRhoVal() << endl;
+	cout << "Rho value = " << RHO << endl;
+	FillTHnSparse("hRho", {fCent, RHO, pthardbin}, sf);
 	// =============================
 	// QA plots
 	// ============================
@@ -412,7 +413,8 @@ Bool_t AliBKJetAnalysis::Run()
 		//fHistos->FillTH2("trketaphi", track->Eta(), track->Phi());
 	}
 
-	this->MeasureBgDensity(ktContainer);
+	//this->MeasureBgDensity(ktContainer);
+	this->RhoSparse(ktContainer, jetContainer, 2);
 
 	TLorentzVector1D RecJets;
 	TLorentzVector1D RecJetsBeforeCorr;
@@ -501,7 +503,7 @@ Bool_t AliBKJetAnalysis::Run()
 				//cout<<"matchedjets"<<endl;
 				for (auto mj : RecJetsMatched)
 				{
-					FillTHnSparse("hJetPt", {fCent, mj.Pt(), pthardbin}, sf);
+					//FillTHnSparse("hJetPt", {fCent, mj.Pt(), pthardbin}, sf);
 					FillTHnSparse("hJetMass", {fCent, mj.M(), pthardbin}, sf);
 				}
 				RecJets = RecJetsMatched;
@@ -806,6 +808,73 @@ Bool_t AliBKJetAnalysis::Run()
 void AliBKJetAnalysis::FinishTaskOutput()
 {
 }
+Bool_t AliBKJetAnalysis::isOverlapping(AliEmcalJet *jet1, AliEmcalJet *jet2)
+{
+	for (Int_t i = 0; i < jet1->GetNumberOfTracks(); ++i)
+	{
+		Int_t jet1Track = jet1->TrackAt(i);
+		for (Int_t j = 0; j < jet2->GetNumberOfTracks(); ++j)
+		{
+			Int_t jet2Track = jet2->TrackAt(j);
+			if (jet1Track == jet2Track)
+				return kTRUE;
+		}
+	}
+	return kFALSE;
+}
+
+void AliBKJetAnalysis::RhoSparse(AliJetContainer *ktContainer, AliJetContainer * aktContainer , Int_t numberofexcludingjets) {
+	// Lets exclude a dijet
+	AliEmcalJet *leading = nullptr;
+	AliEmcalJet *subleading = nullptr;
+	Int_t n = 0;
+	//for (auto ij : aktContainer->accepted_momentum())
+	//	{
+	//	auto j = ij.second;
+	//	cout << "sg jet pt : " << j->Pt() << endl;
+	//	n++;
+	//}
+
+	n = 0;
+	Int_t njetacc = 0;
+	static Double_t rhovec[999];
+ 	 Double_t TotaljetAreaPhys=0;
+  	Double_t TotalTPCArea=2*TMath::Pi()*0.9;
+	for (auto iBg : ktContainer->accepted_momentum())
+	{
+		if (n < numberofexcludingjets) {
+			n++;
+			continue;
+		}
+		auto bgjet = iBg.second;
+
+		Bool_t matched = false;
+		for (auto iSg : aktContainer->accepted_momentum())
+		{
+			auto sgjet = iSg.second;
+			matched = (isOverlapping(bgjet, sgjet)) ? true : false;
+		}
+		//cout << "n = "<<n<< " kt jet pt : " << bgjet->Pt() << " matched : "<< matched << " jet eta = "<<bgjet->Eta()<< endl;
+		if (bgjet -> GetNumberOfTracks()>0){
+			rhovec[njetacc] = bgjet->Pt() / bgjet->Area();
+			TotaljetAreaPhys += bgjet->Area();
+			njetacc++;
+		}
+			
+		n++;
+	}
+
+  	Double_t OccCorr=1;
+    OccCorr = TotaljetAreaPhys/TotalTPCArea;
+	if (njetacc > 0 ) RHO = TMath::Median(njetacc, rhovec);
+	else
+		RHO = 0;
+
+	RHO *= OccCorr;
+	//cout << "jet pt end\n\n"
+	//	 << endl;
+}
+
 //___________________________________________________________________
 void AliBKJetAnalysis::MeasureBgDensity(AliJetContainer *ktContainer)
 {
@@ -1118,8 +1187,8 @@ Bool_t AliBKJetAnalysis::MeasureJets(AliJetContainer *jetContainer, TLorentzVect
 			//if (TMath::Abs(sumcorr.DeltaR(p7))<0.4 && (sumcorr.Pt()/p7.Pt())>4) return false;
 		}
 
-		if (lpt < fLeadingParticlePtMin)
-			continue;
+		//if (lpt < fLeadingParticlePtMin)
+		//	continue;
 
 		//if (istruth)
 		//{
