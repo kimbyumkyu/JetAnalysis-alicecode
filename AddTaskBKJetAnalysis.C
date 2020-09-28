@@ -7,10 +7,14 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
     return NULL;
   }
 
+  AliTaskCDBconnect* taskCDB = AddTaskCDBconnect();
+  taskCDB->SetFallBackToRaw(kTRUE);
+
   AliEmcalCorrectionTask *correctionTask = AddTaskEmcalCorrectionTask();
   correctionTask->SelectCollisionCandidates(AliVEvent::kAny);
   //correctionTask->SetUserConfigurationFilename("AliEmcalCorrectionConfiguration.yaml");
   correctionTask->SetUserConfigurationFilename("./AliEmcalCorrectionConfiguration.yaml");
+  //correctionTask->SetUserConfigurationFilename("./userConfigurationEMCele_PbPb.yaml");
   //correctionTask->SetUserConfigurationFilename("PWGJESampleConfig.yaml");
   correctionTask->Initialize();
 
@@ -24,10 +28,10 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
   //TString trackcontname = option.Contains("Emb") ? "PicoTracksMer" : "tracks";
   //TString trackcontname  = "tracks";
   //TString mccontname="mcparticles";
-  jetFinderTask = AddTaskEmcalJet("usedefault", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, "Jets", 5.);
+  jetFinderTask = AddTaskEmcalJet("usedefault", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, "Jets", 5);
   jetFinderTaskkt = AddTaskEmcalJet("usedefault", "", AliJetContainer::kt_algorithm, 0.2, AliJetContainer::kChargedJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, "JetsKt", 0);
-  jetFinderTaskFullJet = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("FullJets%s", Option.Data()), 5.);
-  jetFinderTaskktFullJet = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::kt_algorithm, 0.2, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("FullJetsKt%s", Option.Data()), 0.);
+  jetFinderTaskFullJet = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("FullJets%s", Option.Data()), 5);
+  jetFinderTaskktFullJet = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::kt_algorithm, 0.2, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("FullJetsKt%s", Option.Data()), 0);
 
 
 
@@ -35,8 +39,8 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
 
   if (Option.Contains("Emb") || Option.Contains("MC"))
   {
-    jetFinderTaskkine = AddTaskEmcalJet("mcparticles", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("Jetsmc%s", Option.Data()), 0.);
-    jetFinderTaskkineFullJet = AddTaskEmcalJet("mcparticles", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("Jetsmc%s", Option.Data()), 0.);
+    jetFinderTaskkine = AddTaskEmcalJet("mcparticles", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("Jetsmc%s", Option.Data()), 5);
+    jetFinderTaskkineFullJet = AddTaskEmcalJet("mcparticles", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kFullJet, 0.15, 0.300, 0.005, AliJetContainer::pt_scheme, Form("Jetsmc%s", Option.Data()), 5);
   }
 
   //AliAnalysisTaskRhoBase *rhosparse = AddTaskRhoSparse("usedefault", "usedefault", "Rho", 0.2, AliEmcalJet::kTPCfid, AliJetContainer::kChargedJet, AliJetContainer::pt_scheme, kFALSE, "", "TPC", 0.15, 0.005, 0, "");
@@ -49,7 +53,7 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
   // Own class
   AliBKJetAnalysis *task = new AliBKJetAnalysis(taskname, option);
   task->SetIsAA(isaa);
-  task->SetLeadingParticlePtMin(5);
+  task->SetLeadingParticlePtMin(0);
   //task->SelectCollisionCandidates( Option.Contains("MC") ? AliVEvent::kAny : AliVEvent::kINT7 );
 
   AliJetContainer *jetCont = task->AddJetContainer(jetFinderTask->GetName(), "TPCfid");
@@ -94,7 +98,7 @@ AliBKJetAnalysis *AddTaskBKJetAnalysis(const char *taskname, const char *option,
     jetCont->SetPercAreaCut(0.6);
   // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s%s", taskname, option), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("JetJtHistograms", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
   if (Option.Contains("Emb") || Option.Contains("MC"))
     task->SetIsMC(true);
 

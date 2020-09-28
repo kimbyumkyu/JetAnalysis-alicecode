@@ -57,7 +57,7 @@ sharedParameters:
 # This defines the settings for the "AliEmcalCorrectionCellEnergy" correction.
 # Note how the "AliEmcalCorrection" part of the name is not required when defining the settings
 CellEnergy:                                         # Cell Energy correction component
-    enabled: false                                  # Whether to enable the task
+    enabled: true                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
     enableShaperCorrection: false                   # Correct all cells >50 GeV for the shaper detector effect (to be used with special testbeam nonlinearity)
@@ -66,7 +66,7 @@ CellEnergy:                                         # Cell Energy correction com
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellBadChannel:                                     # Bad channel removal at the cell level component
-    enabled: false                                  # Whether to enable the task
+    enabled: true                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     load1DBadChMap: false                           # Flag to load 1D bad channel map
     customBadChannelFilePath: ""                    # Full path to a custom bad channel OADB object
@@ -76,7 +76,7 @@ CellBadChannel:                                     # Bad channel removal at the
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellTimeCalib:                                      # Cell Time Calibration component
-    enabled: false                                  # Whether to enable the task
+    enabled: true                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     doMergedBCs: false                              # Whether the task should use the merged BC histogram
     doCalibrateLowGain: false                       # Whether the task should calibrate the low gain cells
@@ -84,7 +84,7 @@ CellTimeCalib:                                      # Cell Time Calibration comp
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellEmulateCrosstalk:                               # Component to emulate crosstalk
-    enabled: false                                  # Whether to enable the task
+    enabled: true                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     printConfiguration: true                        # Print the configuration after initialization
     conservEnergy: true                             # Activate cluster energy conservation
@@ -160,7 +160,7 @@ CellCombineCollections:                             # Utility task to combine tw
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction. NOTE: _DO NOT_ include the embedded cells input object here! Include only the cells from the input event.
         - defaultCells                              # This object is defined above in the cells section of the input objects
 Clusterizer:                                        # Clusterizer component
-    enabled: false                                  # Whether to enable the task
+    enabled: true                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     load1DBadChMap: false                           # Flag to load 1D bad channel map
     clusterizer: kClusterizerv3                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
@@ -190,7 +190,7 @@ Clusterizer:                                        # Clusterizer component
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
         - defaultClusterContainer                   # This object is defined above in the cluster section of the input objects
 ClusterExotics:                                     # Cluster exotics identification component (actual removal is handled by the cluster container)
-    enabled: false                                  # Whether to enable the task
+    enabled: true                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     fExoticMinCellAmplitude: 4.                     # Min energy of leading cell in order for exotic cut to be attempted
     fMaxFcross: 0.97                                # Max value of Fcross = 1-Ecross/ecell allowed for clusters to pass exotic cut
@@ -202,7 +202,7 @@ ClusterExotics:                                     # Cluster exotics identifica
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
         - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
 ClusterNonLinearity:                                # Cluster non-linearity correction component
-    enabled: false                                  # Whether to enable the task
+    enabled: true                                   # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     nonLinFunct: kBeamTestCorrectedv3               # Sets the non-linearity function. Possible options are defined in the header of the cluster non-linearity correction component
     setForceClusterE: false                         # Only for backwards compatibility, force cluster->E() to be set to the cluster non-linearity corrected energy. Off by default. For the standard methods, see: http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerClusterEnergyCorrections
@@ -221,7 +221,7 @@ ClusterNonLinearityMCAfterburner:                   # MC Cluster additional non-
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
         - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
 ClusterTrackMatcher:                                # Cluster-track matcher component
-    enabled: false                                  # Whether to enable the task
+    enabled: true                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     maxDist: 0.1                                    # Max distance between a matched cluster and track
     useDCA: true                                    # Use DCA as starting point for track propagation, rather than primary vertex

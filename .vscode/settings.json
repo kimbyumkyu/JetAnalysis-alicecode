@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "AddTaskBSDiJetTemp.C": "cpp",
+        "AddTaskBKJetAnalysis.C": "cpp",
+        "run.C": "cpp"
+    }
+}

@@ -19,7 +19,6 @@ class AliAnalysisUtils;
 class AliCalorimeterUtils;
 class AliMultSelection;
 class AliJetContainer;
-class AliAnalysisTaskRhoSparse;
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include <vector>
@@ -47,7 +46,7 @@ public:
   void SetIsMC(Bool_t ismc){fIsMC = ismc;};
   void SetScalingFactorHist(TH1D* sfhist) {fScalingFactorHist = (TH1D*)sfhist->Clone();};
   void SetPtHardBin(double b) {pthardbin = b;};
-  void RhoSparse(AliJetContainer *ktContainer, AliJetContainer *aktContainer, Int_t numberofexcludingjets);
+  void RhoSparse(AliJetContainer *ktContainer, AliJetContainer *aktContainer, Int_t numberofexcludingjets, Bool_t isfulljet);
   Double1D &GetDijetPtPair() { return fDijetPtPair; };
   Double1D& GetDijetInvM(){return fDijetInvM;};
   Bool1D& GetDijetSelectionCut(){return fDijetSelectionCut;};
@@ -63,7 +62,6 @@ protected:
   THnSparse * CreateTHnSparse(TString name, TString title, TString templ, Option_t * opt="");
   Long64_t FillTHnSparse( TString name, std::vector<Double_t> x, Double_t w=1. );
   Long64_t FillTHnSparse( THnSparse *h, std::vector<Double_t> x, Double_t w=1. );
-	void MeasureBgDensity (AliJetContainer* ktContainer);
 	Bool_t MeasurePtHardBinScalingFactor ();
   Bool_t isOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2);
   Bool_t MeasureJets(AliJetContainer *jetContainer, TLorentzVector1D &Jets, TLorentzVector1D &JetsBeforeCorr, Bool_t istruth, Bool_t isfulljet);
@@ -103,12 +101,11 @@ private:
   TF1*                            tsf=nullptr;//!
   TF1*                            tsfl=nullptr;//!
   TF1*                            tsfh=nullptr;//!
-  Double_t                        RHO = 0; 
-  Double_t                        RHOM = 0;
-  Double_t                        RHOPX = 0;
-  Double_t                        RHOPY = 0;
-  Double_t                        RHOPZ = 0;
-  Double_t                        RHOE = 0;
+  Double_t                        Rhopt = 0; 
+  Double_t                        Rhom = 0;
+  Double_t                        Rhoptfulljet = 0; 
+  TLorentzVector                  RHOCHJET;
+  TLorentzVector                  RHOFULLJET;
   Double_t                        sf = 1;
   Double_t                        genzvtx = -30;
   Int_t                           NTrials = -1;
@@ -119,6 +116,7 @@ private:
   Bool_t                          IsGoodVertex = false;
   Double_t                        pthardbin = 0.5; //first bin
   double                          fEventsPassed = 0;
+  Double_t                        ptlead = 0;
   ClassDef(AliBKJetAnalysis, 1)
 };
 #endif

@@ -144,8 +144,12 @@ then
   download
 elif [ $method = "merge" ]
 then
-  merge_RunByRun
-  #merge_split
+  if [[ $periods == *"MC"* ]] 
+  then
+    merge_split
+  else 
+    merge_RunByRun
+  fi
 elif [ $method = "terminate" ]
 then
   download
